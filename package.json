@@ -4,13 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "install": "npm run build",
     "start": "nodemon --exec babel-node src/server/index.js --presets env",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:client": "parcel watch src/client/index.html --out-dir dist/client",
     "dev:server": "nodemon --watch ./src/server --exec babel-node ./src/server/index.js --presets env",
-    "build:client": "parcel build src/client/index.html --out-dir dist/client",
-    "build": "npm run build && npm start",
+    "build": "parcel build src/client/index.html --out-dir dist/client",
     "dev": "concurrently --kill-others \"npm run dev:server\" \"npm run dev:client\""
   },
   "engines": {
