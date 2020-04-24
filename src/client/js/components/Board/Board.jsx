@@ -25,6 +25,11 @@ export const Board = () => {
       if (response !== 'OK') notification.error({ title: 'An error occured' })
     })
   }
+  const restartGame = () => {
+    socket.emit('REFRESH_GAME', null, response => {
+      if (response !== 'OK') notification.error({ title: 'An error occured' })
+    })
+  }
   return (
     <>
       <EventCatcher />
@@ -37,7 +42,10 @@ export const Board = () => {
         </Sider>
         <Layout>
           <Header style={{ padding: 0 }}>
-            <Button onClick={drawCard}>Draw</Button>
+            <Row>
+              <Col span={5}><Button onClick={drawCard}>Draw</Button></Col>
+              <Col span={5}><Button onClick={restartGame}>New Game</Button></Col>
+            </Row>
           </Header>
           <Content style={{ margin: '0 16px' }}>
             <Row gutter={90}>

@@ -5,7 +5,7 @@ import bodyParser from 'body-parser'
 import compression from 'compression'
 import APP_ROOT from 'app-root-path'
 import pkg from '../../package.json'
-import { handleCard, draw, initDeck } from './cards/index.js'
+import { handleCard, draw, initDeck, checkNewGame } from './cards/index.js'
 import { __DEV__ } from './utils.js'
 
 const app = express()
@@ -75,6 +75,7 @@ io.on('connection', socket => {
   socket.on('USER_DRAW_CARD', (id, fn) => {
     if (__DEV__) console.log(`User ${id} draw a card`)
     if (!isGameOn) startGame()
+    checkNewGame()
     usersConnected.find(user => user.id === id).cards.push(draw())
     io.emit('REFRESH_USER', usersConnected)
     fn('OK')

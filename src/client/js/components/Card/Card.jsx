@@ -4,9 +4,9 @@ import './index.css';
 class Card extends Component {
   render() {
     const suitMap = {
-      'S': 'Trêfle',
+      'S': 'Pique',
       'H': 'Coeur',
-      'C': 'Pique',
+      'C': 'Trêfle',
       'D': 'Carreau'
     };
 
