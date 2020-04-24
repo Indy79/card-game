@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Menu } from 'antd'
-import { UserOutlined } from '@ant-design/icons'
+import UserOutlined from '@ant-design/icons/UserOutlined'
 
 const { SubMenu } = Menu
 

@@ -1,144 +1,93 @@
-// modules are defined as an array
-// [ module function, map of requires ]
-//
-// map of requires is short require name -> numeric require
-//
-// anything defined in a previous bundle is accessed via the
-// orig method which is the require for previous bundles
-parcelRequire = (function (modules, cache, entry, globalName) {
-  // Save the require from previous bundle to this closure if any
-  var previousRequire = typeof parcelRequire === 'function' && parcelRequire;
-  var nodeRequire = typeof require === 'function' && require;
+import http from 'http';
+import SocketIO from 'socket.io';
+import express from 'express';
+import bodyParser from 'body-parser';
+import compression from 'compression';
+import APP_ROOT from 'app-root-path';
+import pkg from '../../package.json';
+import { handleCard, draw, initDeck } from './cards/index.js';
+import { __DEV__ } from './utils.js';
 
-  function newRequire(name, jumped) {
-    if (!cache[name]) {
-      if (!modules[name]) {
-        // if we cannot find the module within our internal map or
-        // cache jump to the current global require ie. the last bundle
-        // that was added to the page.
-        var currentRequire = typeof parcelRequire === 'function' && parcelRequire;
-        if (!jumped && currentRequire) {
-          return currentRequire(name, true);
-        }
+const app = express();
 
-        // If there are other bundles on this page the require from the
-        // previous one is saved to 'previousRequire'. Repeat this as
-        // many times as there are bundles until the module is found or
-        // we exhaust the require chain.
-        if (previousRequire) {
-          return previousRequire(name, true);
-        }
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(compression());
 
-        // Try the node require function if it exists.
-        if (nodeRequire && typeof name === 'string') {
-          return nodeRequire(name);
-        }
+app.use(express.static(APP_ROOT + '/dist/client'));
 
-        var err = new Error('Cannot find module \'' + name + '\'');
-        err.code = 'MODULE_NOT_FOUND';
-        throw err;
-      }
+const server = http.Server(app);
+const io = new SocketIO(server);
+const port = process.env.PORT || 3000;
 
-      localRequire.resolve = resolve;
-      localRequire.cache = {};
+app.get('/version', function (req, res) {
+  res.json({
+    version: pkg.version
+  });
+});
 
-      var module = cache[name] = new newRequire.Module(name);
+app.get('*', function (_, response) {
+  response.sendFile(APP_ROOT + '/dist/client/index.html');
+});
 
-      modules[name][0].call(module.exports, localRequire, module, module.exports, this);
-    }
+let usersConnected = [];
+let isGameOn = false;
 
-    return cache[name].exports;
+io.on('connection', socket => {
+  const nick = socket.handshake.query.nick;
+  const currentUser = {
+    id: socket.id,
+    nick: nick,
+    cards: []
+  };
+  usersConnected = [...usersConnected, currentUser];
+  if (__DEV__) console.log('Logged with :', currentUser);
+  if (__DEV__) console.log('Currently logged :', usersConnected);
 
-    function localRequire(x){
-      return newRequire(localRequire.resolve(x));
-    }
+  io.to(socket.id).emit('UPDATE_SELF', currentUser);
 
-    function resolve(x){
-      return modules[name][1][x] || x;
-    }
-  }
+  socket.broadcast.emit('USER_JOINED', currentUser);
 
-  function Module(moduleName) {
-    this.id = moduleName;
-    this.bundle = newRequire;
-    this.exports = {};
-  }
+  setTimeout(() => {
+    if (__DEV__) console.log('Broadcasting users list');
+    io.emit('REFRESH_USER', usersConnected);
+  }, 500);
 
-  newRequire.isParcelRequire = true;
-  newRequire.Module = Module;
-  newRequire.modules = modules;
-  newRequire.cache = cache;
-  newRequire.parent = previousRequire;
-  newRequire.register = function (id, exports) {
-    modules[id] = [function (require, module) {
-      module.exports = exports;
-    }, {}];
+  const startGame = () => {
+    isGameOn = true;
+    initDeck();
+    usersConnected = usersConnected.map(user => Object.assign({}, user, { cards: [] }));
+    io.emit('REFRESH_USER', usersConnected);
+    io.emit('GAME_STARTED');
   };
 
-  var error;
-  for (var i = 0; i < entry.length; i++) {
-    try {
-      newRequire(entry[i]);
-    } catch (e) {
-      // Save first error but execute all entries
-      if (!error) {
-        error = e;
-      }
-    }
-  }
+  socket.on('GAME_ON', _ => {
+    startGame();
+  });
 
-  if (entry.length) {
-    // Expose entry point to Node, AMD or browser globals
-    // Based on https://github.com/ForbesLindesay/umd/blob/master/template.js
-    var mainExports = newRequire(entry[entry.length - 1]);
+  socket.on('REFRESH_GAME', _ => {
+    if (isGameOn) io.emit('GAME_STARTED');
+    startGame();
+  });
 
-    // CommonJS
-    if (typeof exports === "object" && typeof module !== "undefined") {
-      module.exports = mainExports;
+  socket.on('USER_DRAW_CARD', (id, fn) => {
+    if (__DEV__) console.log(`User ${id} draw a card`);
+    if (!isGameOn) startGame();
+    usersConnected.find(user => user.id === id).cards.push(draw());
+    io.emit('REFRESH_USER', usersConnected);
+    fn('OK');
+  });
 
-    // RequireJS
-    } else if (typeof define === "function" && define.amd) {
-     define(function () {
-       return mainExports;
-     });
-
-    // <script>
-    } else if (globalName) {
-      this[globalName] = mainExports;
-    }
-  }
-
-  // Override the current require with this new one
-  parcelRequire = newRequire;
-
-  if (error) {
-    // throw error from earlier, _after updating parcelRequire_
-    throw error;
-  }
-
-  return newRequire;
-})({"index.js":[function(require,module,exports) {
-"use strict";
-
-var _express = _interopRequireDefault(require("express"));
-
-var _http = _interopRequireDefault(require("http"));
-
-var _socket = _interopRequireDefault(require("socket.io"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const app = (0, _express.default)();
-
-const server = _http.default.Server(app);
-
-const io = new _socket.default(server);
-const port = process.env.PORT || 3000;
-app.get('/', function (req, res) {
-  res.send('Hello World!');
+  socket.on('disconnect', _ => {
+    if (__DEV__) console.log('Unlogged with :', usersConnected.find(user => user.id === currentUser.id));
+    usersConnected = usersConnected.filter(user => user.id !== currentUser.id);
+    if (__DEV__) console.log('Currently logged :', usersConnected);
+    socket.broadcast.emit('USER_DISCONNECT', currentUser);
+    socket.broadcast.emit('REFRESH_USER', usersConnected);
+  });
 });
-app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
+
+server.listen(port, () => {
+  console.log('[INFO] Listening on *:' + port);
 });
-},{}]},{},["index.js"], null)
-//# sourceMappingURL=/index.js.map
+//# sourceMappingURL=index.js.map
