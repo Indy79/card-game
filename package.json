@@ -8,7 +8,7 @@
     "dev:client": "parcel watch src/client/index.html --out-dir dist/client",
     "dev:server": "nodemon --watch ./src/server --exec babel-node ./src/server/index.js --presets env",
     "build": "parcel build src/client/index.html --out-dir dist/client",
-    "start": "concurrently --kill-others \"npm run dev:server\" \"npm run dev:client\""
+    "start": "npm run build && npm run dev:server"
   },
   "engines": {
     "node": ">=10"
