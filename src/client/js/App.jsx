@@ -1,18 +1,11 @@
+import 'antd/dist/antd.css'
 import React, { lazy, Suspense } from 'react'
 import ReacDOM from 'react-dom'
-
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
-
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import AuthorizedRoute from './components/AuthorizedRoute'
 import { ApplicationContextProvider } from './contexts/Application'
 import { SocketContextProvider } from './contexts/Socket'
 
-import 'antd/dist/antd.css'
-
-import { Layout } from 'antd'
-
-const { Header, Footer, Content } = Layout
-
-import AuthorizedRoute from './components/AuthorizedRoute'
 
 const Login = lazy(() => import('./components/Login'))
 const Board = lazy(() => import('./components/Board'))

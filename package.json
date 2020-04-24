@@ -4,12 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --exec babel-node src/server/index.js --presets env",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:client": "parcel watch src/client/index.html --out-dir dist/client",
     "dev:server": "nodemon --watch ./src/server --exec babel-node ./src/server/index.js --presets env",
     "build": "parcel build src/client/index.html --out-dir dist/client",
-    "dev": "concurrently --kill-others \"npm run dev:server\" \"npm run dev:client\""
+    "start": "concurrently --kill-others \"npm run dev:server\" \"npm run dev:client\""
   },
   "engines": {
     "node": ">=10"

@@ -1,12 +1,13 @@
+import Button from 'antd/es/button'
+import Checkbox from 'antd/es/checkbox'
+import Col from 'antd/es/col'
+import Form from 'antd/es/form'
+import Input from 'antd/es/input'
+import Row from 'antd/es/row'
 import React, { useContext, useEffect, useState } from 'react'
-import { Form, Input, Button, Checkbox, Row, Col } from 'antd'
-import {
-  ApplicationContext,
-  disconnectUser,
-  connectUser,
-} from '../../contexts/Application'
-import { SocketContext, connectWithNickname } from '../../contexts/Socket'
 import { useHistory } from 'react-router-dom'
+import { ApplicationContext, connectUser, disconnectUser } from '../../contexts/Application'
+import { connectWithNickname, SocketContext } from '../../contexts/Socket'
 
 const { Item } = Form
 
